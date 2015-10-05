@@ -20,6 +20,7 @@
         height: null,
         popupIsOpen: true,
         rotateValue: 0,
+        freePrint: false,
 
         _create: function() {
             if(!Mapbender.checkTarget("mbPrintClient", this.options.target)){
@@ -30,6 +31,7 @@
         },
 
         _setup: function(){
+            var self = this;
             this.elementUrl = Mapbender.configuration.application.urls.element + '/' + this.element.attr('id') + '/';
             this.map = $('#' + this.options.target).data('mapbenderMbMap');
             
@@ -39,6 +41,35 @@
                 .on('keyup', $.proxy(this._updateGeometry, this));
             $('select[name="template"]', this.element)
                 .on('change', $.proxy(this._getTemplateSize, this));
+            $('input[name="freePrint"]', this.element)
+                .on('change', function(){
+                    $('.freePrintHide').toggleClass('hidden');
+                    
+                    self.layer.removeAllFeatures();
+
+                    if($('input[name="freePrint"]').prop("checked")){
+                        if(!self.drawControl){    
+                            self.drawControl = new OpenLayers.Control.DrawFeature(self.layer, OpenLayers.Handler.RegularPolygon, {
+                                    handlerOptions: {
+                                        sides: 4,
+                                        irregular: true
+                                    },
+                                    featureAdded: function(feature) {
+                                        self.layer.removeFeatures([self.feature]);
+                                        self.feature = feature;
+                                    }
+                                });
+                            self.map.map.olMap.addControl(self.drawControl);  
+                        }
+                        self.freePrint = true;
+                        self.control.deactivate();    
+                        self.drawControl.activate();
+                    }else{
+                        self.freePrint = false;
+                        self.control.activate(); 
+                        self._updateGeometry(true);
+                    }
+                });
 
             this._trigger('ready');
             this._ready();
@@ -135,6 +166,9 @@
         },
 
         _updateGeometry: function(reset) {
+            if(this.freePrint){
+                return null;
+            }
             var width = this.width,
                 height = this.height,
                 scale = this._getPrintScale(),
@@ -267,6 +301,26 @@
                 extent: {},
                 center: {}
             };
+            
+            if(this.freePrint){
+                var bounds = this.feature.geometry.getBounds();
+                var width = Math.round(bounds.right - bounds.left);
+                var height = Math.round(bounds.top - bounds.bottom);
+                
+                if(width > height){
+                    var factor = width / (this.width * 100);
+                    height = this.height * 100 * factor;
+                }else{
+                    var factor = height / (this.height * 100);
+                    width = this.width * 100 * factor;
+                } 
+                
+                var worldSize = {
+                    x: width,
+                    y: height
+                };
+                this.feature.world_size = worldSize;
+            }
 
             data.extent.width = this.feature.world_size.x;
             data.extent.height = this.feature.world_size.y;

@@ -1,6 +1,11 @@
 <div id="{{ id }}" class="mb-element mb-element-printclient" title="{{ title |trans }}">
     <form id="formats" action="">
         
+        <div class="checkWrapper left iconCheckbox iconCheckboxActive " data-icon="iconCheckbox">
+            <input class="checkbox" type="checkbox" name="freePrint" value="1">
+        </div>
+        <label class="labelCheck">freier Druck</label><br>
+        
         <label class="labelInput">{{ 'mb.core.printclient.label.template' | trans }}</label>
         <div class="dropdown">
             <select name="template" class="hiddenDropdown">
@@ -23,24 +28,26 @@
             <ul class="dropdownList"></ul>
         </div>
 
-        <label class="labelInput">{{ 'mb.core.printclient.label.scale' | trans }}</label>
-        <div class="dropdown">
-            <select name="scale_select" class="hiddenDropdown">
-                {% for key in configuration.scales %}
-                    <option value="{{ key }}">1:{{ key }}</option>
-                {% endfor %}
-            </select>
-            <div class="dropdownValue iconDown"></div>
-            <ul class="dropdownList"></ul>
+        <div class="freePrintHide">    
+            <label class="labelInput">{{ 'mb.core.printclient.label.scale' | trans }}</label>
+            <div class="dropdown">
+                <select name="scale_select" class="hiddenDropdown">
+                    {% for key in configuration.scales %}
+                        <option value="{{ key }}">1:{{ key }}</option>
+                    {% endfor %}
+                </select>
+                <div class="dropdownValue iconDown"></div>
+                <ul class="dropdownList"></ul>
+            </div>
+
+            {% if configuration.rotatable is defined and configuration.rotatable == 1 %}
+                    <label class="labelInput" for="rotation">{{ 'mb.core.printclient.label.rotation' | trans }}</label>
+                    <input class="input" type="text" name="rotation" value="0"/>
+                {% else %}
+                    <input class="input" type="text" name="rotation" value="0" style="display: none"/>
+            {% endif %}
         </div>
-
-        {% if configuration.rotatable is defined and configuration.rotatable == 1 %}
-            <label class="labelInput" for="rotation">{{ 'mb.core.printclient.label.rotation' | trans }}</label>
-            <input class="input" type="text" name="rotation" value="0"/>
-	    {% else %}
-			<input class="input" type="text" name="rotation" value="0" style="display: none"/>
-        {% endif %}
-
+            
         {% if configuration.optional_fields is defined %}
             {% set required = '' %}
             {% for key,field in configuration.optional_fields %}
