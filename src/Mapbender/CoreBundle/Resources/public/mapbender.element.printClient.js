@@ -121,6 +121,10 @@
             }
             me.show();
             this.popupIsOpen = true;
+            if($('input[name="freePrint"]').prop("checked") == true){
+                $('input[name="freePrint"]').parent().click();
+            }
+         
             this._getTemplateSize();
             this._updateElements();
             this._setScale();
@@ -285,6 +289,10 @@
                 if(null !== this.control) {
                     this.control.deactivate();
                     this.map.map.olMap.removeControl(this.control);
+                }
+                if(null !== this.drawControl) {
+                    this.drawControl.deactivate();
+                    this.map.map.olMap.removeControl(this.drawControl);
                 }
                 if(null !== this.layer) {
                     this.map.map.olMap.removeLayer(this.layer);
