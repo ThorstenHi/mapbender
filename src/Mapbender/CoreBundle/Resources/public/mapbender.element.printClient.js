@@ -21,6 +21,7 @@
         popupIsOpen: true,
         rotateValue: 0,
         freePrint: false,
+		drawControl: null,
 
         _create: function() {
             if(!Mapbender.checkTarget("mbPrintClient", this.options.target)){
