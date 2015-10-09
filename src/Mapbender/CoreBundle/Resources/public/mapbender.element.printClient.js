@@ -479,7 +479,10 @@
                         }else{
 							geometry.style = layer.styleMap.createSymbolizer(feature,feature.renderIntent);
                         }
-                        geometries.push(geometry);
+                        // only visible features
+                        if(geometry.style.fillOpacity > 0 && geometry.style.strokeOpacity > 0){
+                            geometries.push(geometry);
+                        }
                     }
                 }
 
