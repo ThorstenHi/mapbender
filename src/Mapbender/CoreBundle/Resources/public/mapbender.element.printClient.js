@@ -542,6 +542,10 @@
                 //click hidden submit
                 form.find('input[type="submit"]').click();
             }
+
+            if(this.options.autoClose){
+                this.popup.close();
+            }
         },
 
         _getTemplateSize: function() {
