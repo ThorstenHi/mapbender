@@ -153,7 +153,7 @@
 
             $.each(scales, function(idx, scale) {
                 if(scale >= currentScale){
-                    selectValue = scales[idx-1];
+                    selectValue = scales[idx];
                     return false;
                 }
             });
