@@ -56,11 +56,9 @@
                         <span class="required">*</span>
                         {% set required = 'required=required' %}
                     {% endif %}
-                    {% if field.options is defined %}
-                        {% if field.options.required == true %}
-                            <span class="required">*</span>
-                            {% set required = 'required=required' %}
-                        {% endif %}
+                    {% if field.options is defined and field.options.required == true %}
+                        <span class="required">*</span>
+                        {% set required = 'required=required' %}
                     {% endif %}
                 </label>
                 <input type="text" class="input validationInput" name="extra[{{ key }}]" {{ required }}>
