@@ -21,15 +21,23 @@ class PrintService
 
     public function doPrint($data)
     {
+        $t0 = time();
         $this->setup($data);
-       
+        $this->container->get('logger')->debug('Setup: ' . (time() - $t0) . ' seconds.');
+
+        $t0 = time();
         if ($data['rotation'] == 0) {
             $this->createFinalMapImage();
         } else {
             $this->createFinalRotatedMapImage();
         }
+        $this->container->get('logger')->debug('Building image: ' . (time() - $t0) . ' seconds.');
 
-        return $this->buildPdf();
+        $t0 = time();
+        $pdf = $this->buildPdf();
+        $this->container->get('logger')->debug('Building PDF: ' . (time() - $t0) . ' seconds.');
+
+        return $pdf;
     }
 
     private function setup($data)
@@ -38,19 +46,19 @@ class PrintService
         $this->tempDir = sys_get_temp_dir();
         // resource dir
         $this->resourceDir = $this->container->getParameter('kernel.root_dir') . '/Resources/MapbenderPrintBundle';
-        
+
         // get user
         $securityContext = $this->container->get('security.context');
         $token = $securityContext->getToken();
         $this->user = $token->getUser();
-        
+
         // data from client
         $this->data = $data;
 
         // template configuration from odg
         $odgParser = new OdgParser($this->container);
-        $this->conf = $conf = $odgParser->getConf($data['template']);       
-        
+        $this->conf = $conf = $odgParser->getConf($data['template']);
+
         // image size
         $this->imageWidth = round($conf['map']['width'] / 25.4 * $data['quality']);
         $this->imageHeight = round($conf['map']['height'] / 25.4 * $data['quality']);
@@ -86,7 +94,7 @@ class PrintService
             $width = '&WIDTH=' . $this->imageWidth;
             $height =  '&HEIGHT=' . $this->imageHeight;
         }else{
-            // calculate needed bbox 
+            // calculate needed bbox
             $neededExtentWidth = abs(sin(deg2rad($rotation)) * $extentHeight) +
                 abs(cos(deg2rad($rotation)) * $extentWidth);
             $neededExtentHeight = abs(sin(deg2rad($rotation)) * $extentWidth) +
@@ -159,6 +167,7 @@ class PrintService
 
     private function createFinalMapImage()
     {
+        $t0 = time();
         $width = $this->imageWidth;
         $height = $this->imageHeight;
         $imageNames = $this->getImages($width, $height);
@@ -168,6 +177,9 @@ class PrintService
         $finalImage = imagecreatetruecolor($width, $height);
         $bg = ImageColorAllocate($finalImage, 255, 255, 255);
         imagefilledrectangle($finalImage, 0, 0, $width, $height, $bg);
+
+        $this->container->get('logger')->debug('Setting up and fetching images: ' . (time() - $t0) . ' seconds.');
+        $t0 = time();
 
         foreach ($imageNames as $imageName) {
             // Note: suppressing the errors IS bad, bad PHP wants us to do it that way
@@ -182,6 +194,8 @@ class PrintService
         }
         //draw features
         $this->drawFeatures();
+
+        $this->container->get('logger')->debug('Painting images on top of each other: ' . (time() - $t0) . ' seconds.');
     }
 
     private function createFinalRotatedMapImage()
@@ -372,12 +386,12 @@ class PrintService
             $pdf->SetFont('Arial', '', $this->conf['fields'][$k]['fontsize']);
             $pdf->SetXY($this->conf['fields'][$k]['x'],
                 $this->conf['fields'][$k]['y']);
-            
+
             // continue if extent field is set
             if(preg_match("/^extent/", $k)){
                 continue;
             }
-            
+
             switch ($k) {
                 case 'date' :
                     $date = new \DateTime;
@@ -409,29 +423,29 @@ class PrintService
         if (isset($this->conf['scalebar']) ) {
             $this->addScaleBar();
         }
-        
+
         // add coordinates
-        if (isset($this->conf['fields']['extent_ur_x']) && isset($this->conf['fields']['extent_ur_y']) 
+        if (isset($this->conf['fields']['extent_ur_x']) && isset($this->conf['fields']['extent_ur_y'])
                 && isset($this->conf['fields']['extent_ll_x']) && isset($this->conf['fields']['extent_ll_y']))
         {
             $this->addCoordinates();
         }
-        
+
         // add dynamic logo
         if ($this->conf['dynamic_image']){
             $this->addDynamicImage();
         }
-        
+
         // add dynamic text
         if ($this->conf['fields']['dynamic_text']){
             $this->addDynamicText();
         }
-        
+
         // add legend
         if (isset($this->data['legends']) && !empty($this->data['legends'])){
             $this->addLegend();
         }
-            
+
         return $pdf->Output(null, 'S');
     }
 
@@ -621,11 +635,11 @@ class PrintService
         $pdf->SetFillColor(0,0,0);
         $pdf->Rect($this->conf['scalebar']['x'] + 40  , $this->conf['scalebar']['y'], 10, 2, 'FD');
     }
-    
+
     private function addCoordinates()
     {
         $pdf = $this->pdf;
-        
+
         $corrFactor = 2;
         $precision = 2;
         // correction factor and round precision if WGS84
@@ -633,21 +647,21 @@ class PrintService
              $corrFactor = 3;
              $precision = 6;
         }
-        
+
         // upper right Y
-        $pdf->SetFont('Arial', '', $this->conf['fields']['extent_ur_y']['fontsize']);          
+        $pdf->SetFont('Arial', '', $this->conf['fields']['extent_ur_y']['fontsize']);
         $pdf->Text($this->conf['fields']['extent_ur_y']['x'] + $corrFactor,
                     $this->conf['fields']['extent_ur_y']['y'] + 3,
                     round($this->data['extent_feature'][2]['y'], $precision));
 
         // upper right X
-        $pdf->SetFont('Arial', '', $this->conf['fields']['extent_ur_x']['fontsize']);       
+        $pdf->SetFont('Arial', '', $this->conf['fields']['extent_ur_x']['fontsize']);
         $pdf->RotatedText($this->conf['fields']['extent_ur_x']['x'] + 1,
                     $this->conf['fields']['extent_ur_x']['y'],
                     round($this->data['extent_feature'][2]['x'], $precision),-90);
 
         // lower left Y
-        $pdf->SetFont('Arial', '', $this->conf['fields']['extent_ll_y']['fontsize']);          
+        $pdf->SetFont('Arial', '', $this->conf['fields']['extent_ll_y']['fontsize']);
         $pdf->Text($this->conf['fields']['extent_ll_y']['x'],
                     $this->conf['fields']['extent_ll_y']['y'] + 3,
                     round($this->data['extent_feature'][0]['y'], $precision));
@@ -658,7 +672,7 @@ class PrintService
                     $this->conf['fields']['extent_ll_x']['y'] + 30,
                     round($this->data['extent_feature'][0]['x'], $precision),90);
     }
-    
+
     private function addDynamicImage()
     {
         if($this->user == 'anon.'){
@@ -667,11 +681,11 @@ class PrintService
 
         $groups = $this->user->getGroups();
         $group = $groups[0];
-        
+
         if(!isset($group)){
             return;
         }
-        
+
         $dynImage = $this->resourceDir . '/images/' . $group->getTitle() . '.png';
         if(file_exists ($dynImage)){
             $this->pdf->Image($dynImage,
@@ -684,27 +698,27 @@ class PrintService
         }
 
     }
-    
+
     private function addDynamicText()
     {
         if($this->user == 'anon.'){
             return;
         }
-        
+
         $groups = $this->user->getGroups();
         $group = $groups[0];
-        
+
         if(!isset($group)){
             return;
         }
-        
+
         $this->pdf->SetFont('Arial', '', $this->conf['fields']['dynamic_text']['fontsize']);
         $this->pdf->MultiCell($this->conf['fields']['dynamic_text']['width'],
                 $this->conf['fields']['dynamic_text']['height'],
                 $group->getDescription());
-        
-    }    
-    
+
+    }
+
     private function getColor($color, $alpha, $image)
     {
         list($r, $g, $b) = CSSColorParser::parse($color);
@@ -818,7 +832,7 @@ class PrintService
             imageline($image, $from[0], $from[1], $to[0], $to[1], $color);
         }
     }
-	
+
     private function drawMultiLineString($geometry, $image)
     {
         $color = $this->getColor(
@@ -826,9 +840,9 @@ class PrintService
             $geometry['style']['strokeOpacity'],
             $image);
         imagesetthickness($image, $geometry['style']['strokeWidth']);
-	
+
 		foreach($geometry['coordinates'] as $coords) {
-		
+
 			for($i = 1; $i < count($coords); $i++) {
 
 				if($this->rotation == 0){
