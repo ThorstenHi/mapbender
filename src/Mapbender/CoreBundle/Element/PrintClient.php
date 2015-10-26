@@ -176,7 +176,7 @@ class PrintClient extends Element
         $configuration = $this->getConfiguration();
         switch ($action) {
             case 'print':
-
+                $tstart = time();
                 $data = $request->request->all();
 
                 foreach ($data['layers'] as $idx => $layer) {
@@ -209,6 +209,7 @@ class PrintClient extends Element
                     $data['legends'] = json_decode($data['legends'], true);
                 }
 
+                $t0 = time();
                 $printservice = new PrintService($this->container);
 
                 $displayInline = true;
@@ -220,7 +221,8 @@ class PrintClient extends Element
                     'Content-Type' => $displayInline ? 'application/pdf' : 'application/octet-stream',
                     'Content-Disposition' => 'attachment; filename=' . $filename
                 ));
-
+                $this->container->get('logger')->debug('Print service took ' . (time() - $t0) . ' seconds.');
+                $this->container->get('logger')->debug('Print took ' . (time() - $tstart) . ' seconds.');
                 return $response;
 
             case 'getTemplateSize':
