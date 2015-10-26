@@ -65,6 +65,12 @@
             {% endfor %}
         {% endif %}
         
+        {% if configuration.hidden_fields is defined %}
+            {% for key in configuration.hidden_fields|keys %}
+                <input class="input" type="hidden" name="extra[{{ key }}]" />
+            {% endfor %}
+        {% endif %}
+        
         {% if configuration.legend is defined and configuration.legend == 1 %}
             {% set legend_checked = 'checked' %}
             {% if configuration.legend_default_behaviour is defined and configuration.legend_default_behaviour == 0 %}

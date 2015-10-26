@@ -531,6 +531,11 @@
                     count++;
                 }
             }
+            
+            for (key in this.options.hidden_fields) {
+                var value = eval(this.options.hidden_fields[key]);
+                $('input[name="extra[' + key + ']"]').val(value);
+            } 
 
             $('div#layers').empty();
             fields.appendTo(form.find('div#layers'));
