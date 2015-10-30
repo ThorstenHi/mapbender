@@ -100,7 +100,7 @@
                         buttons: {
                                 'cancel': {
                                     label: Mapbender.trans('mb.core.printclient.popup.btn.cancel'),
-                                    cssClass: 'button buttonCancel critical right',
+                                    cssClass: 'button buttonCancel right',
                                     callback: function(){
                                         self.close();
                                     }
@@ -466,7 +466,11 @@
             var geojsonFormat = new OpenLayers.Format.GeoJSON();
             for(var i = 0; i < this.map.map.olMap.layers.length; i++) {
                 var layer = this.map.map.olMap.layers[i];
-                if('OpenLayers.Layer.Vector' !== layer.CLASS_NAME || this.layer === layer) {
+                if('OpenLayers.Layer.Vector' !== layer.CLASS_NAME || this.layer === layer || layer.features.length === 0) {
+                    continue;
+                }
+
+                if(layer.name === "KabelfahnenControl") {
                     continue;
                 }
 
@@ -503,6 +507,22 @@
                     name: 'layers[' + (lyrCount + i) + ']',
                     value: JSON.stringify(lyrConf),
                     weight: this.map.map.olMap.getLayerIndex(layer)
+                }));
+            }
+
+            // kabelfahne
+            var kfLayer = this.map.map.olMap.getLayersByName('Kabelfahne')[0];
+            if (undefined !== kfLayer){
+                var lyrConf = {
+                    type: 'kabelfahne',
+                    opacity: 1,
+                    url: kfLayer.url + '&LAYERS=' + kfLayer.layers[0] + '&SRS=' + kfLayer.projection.projCode + '&TRANSPARENT=TRUE&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&FORMAT=image%2Fpng'
+                };
+                $.merge(fields, $('<input />', {
+                    type: 'hidden',
+                    name: 'layers[666]',
+                    value: JSON.stringify(lyrConf),
+                    weight: this.map.map.olMap.getLayerIndex(kfLayer)
                 }));
             }
 
