@@ -314,24 +314,16 @@
                 extent: {},
                 center: {}
             };
-            
+
             if(this.freePrint){
                 var bounds = this.feature.geometry.getBounds();
                 var width = Math.round(bounds.right - bounds.left);
                 var height = Math.round(bounds.top - bounds.bottom);
-                
-                if(width > height){
-                    var factor = width / (this.width * 100);
-                    height = this.height * 100 * factor;
-                }else{
-                    var factor = height / (this.height * 100);
-                    width = this.width * 100 * factor;
-                } 
-                
                 var worldSize = {
                     x: width,
                     y: height
                 };
+
                 this.feature.world_size = worldSize;
             }
 
@@ -373,6 +365,14 @@
                 name: 'center[y]',
                 value: extent.center.y
             }));
+
+            if(this.freePrint){
+                $.merge(fields, $('<input />', {
+                    type: 'hidden',
+                    name: 'freePrint',
+                    value: this.freePrint
+                }));
+            }
 
             // extent feature
             var feature_coords = new Array();

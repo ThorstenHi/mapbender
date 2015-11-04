@@ -63,6 +63,14 @@ class PrintService
         $this->imageWidth = round($conf['map']['width'] / 25.4 * $data['quality']);
         $this->imageHeight = round($conf['map']['height'] / 25.4 * $data['quality']);
 
+        if(isset($data['freePrint']) && $data['freePrint']){
+            if($data['extent']['width'] >= $data['extent']['height']){
+                $this->imageHeight = ($this->imageWidth / $data['extent']['width']) * $data['extent']['height'];
+            }else{
+                $this->imageWidth = ($this->imageHeight / $data['extent']['height']) * $data['extent']['width'];
+            }
+        }
+
         // map requests array
         $this->mapRequests = array();
         foreach ($data['layers'] as $i => $layer) {
@@ -370,8 +378,17 @@ class PrintService
         $mapWidth = $this->conf['map']['width'];
         $mapHeight = $this->conf['map']['height'];
 
-        $pdf->Image($this->finalImageName, $mapUlX, $mapUlY,
-                $mapWidth, $mapHeight, 'png', '', false, 0, 5, -1 * 0);
+        if(!$this->data['freePrint']){
+            $pdf->Image($this->finalImageName, $mapUlX, $mapUlY,
+                    $mapWidth, $mapHeight, 'png', '', false, 0, 5, -1 * 0);
+        }else{
+            $newMapWidth = round(($this->imageWidth / $this->data['quality']) * 25.4);
+            $newMapHeight = round(($this->imageHeight / $this->data['quality']) * 25.4);
+            $offsetX = round(($this->conf['map']['width'] - $newMapWidth) / 2);
+            $offsetY = round(($this->conf['map']['height'] - $newMapHeight) / 2);
+            $pdf->Image($this->finalImageName, $mapUlX + $offsetX, $mapUlY + $offsetY,
+                    $newMapWidth, $newMapHeight, 'png', '', false, 0, 5, -1 * 0);
+        }
         // add map border (default is black)
         $pdf->Rect($mapUlX, $mapUlY, $mapWidth, $mapHeight);
         unlink($this->finalImageName);
@@ -400,9 +417,11 @@ class PrintService
                         $date->format('d.m.Y'));
                     break;
                 case 'scale' :
-                    $pdf->Cell($this->conf['fields']['scale']['width'],
-                        $this->conf['fields']['scale']['height'],
-                        '1 : ' . $this->data['scale_select']);
+                    if(!$this->data['freePrint']){
+                        $pdf->Cell($this->conf['fields']['scale']['width'],
+                            $this->conf['fields']['scale']['height'],
+                            '1 : ' . $this->data['scale_select']);
+                    }
                     break;
                 default:
                     if (isset($this->data['extra'][$k])) {
