@@ -818,6 +818,9 @@ class PrintService
                 $geometry['style']['strokeOpacity'],
                 $image);
             imagesetthickness($image, $geometry['style']['strokeWidth']);
+			if ($this->data['quality'] > 72){
+				imagesetthickness($image, $geometry['style']['strokeWidth'] * 4);
+			}
             imagepolygon($image, $points, count($ring), $color);
         }
     }
@@ -829,6 +832,9 @@ class PrintService
             $geometry['style']['strokeOpacity'],
             $image);
         imagesetthickness($image, $geometry['style']['strokeWidth']);
+		if ($this->data['quality'] > 72){
+			imagesetthickness($image, $geometry['style']['strokeWidth'] * 4);
+		}
 
         for($i = 1; $i < count($geometry['coordinates']); $i++) {
 
@@ -859,6 +865,9 @@ class PrintService
             $geometry['style']['strokeOpacity'],
             $image);
         imagesetthickness($image, $geometry['style']['strokeWidth']);
+		if ($this->data['quality'] > 72){
+			imagesetthickness($image, $geometry['style']['strokeWidth'] * 4);
+		}
 
 		foreach($geometry['coordinates'] as $coords) {
 
