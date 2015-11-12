@@ -336,6 +336,7 @@
         },
 
         _print: function() {
+            var self = this;
             var form = $('form#formats', this.element);
             var extent = this._getPrintExtent();
 
@@ -511,19 +512,21 @@
             }
 
             // kabelfahne
-            var kfLayer = this.map.map.olMap.getLayersByName('Kabelfahne')[0];
-            if (undefined !== kfLayer){
-                var lyrConf = {
-                    type: 'kabelfahne',
-                    opacity: 1,
-                    url: kfLayer.url + '&LAYERS=' + kfLayer.layers[0] + '&SRS=' + kfLayer.projection.projCode + '&TRANSPARENT=TRUE&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&FORMAT=image%2Fpng'
-                };
-                $.merge(fields, $('<input />', {
-                    type: 'hidden',
-                    name: 'layers[666]',
-                    value: JSON.stringify(lyrConf),
-                    weight: this.map.map.olMap.getLayerIndex(kfLayer)
-                }));
+            var kfLayers = this.map.map.olMap.getLayersByName('Kabelfahne');
+            if (undefined !== kfLayers){
+                $.each(kfLayers, function(key, layer) {
+                    var lyrConf = {
+                        type: 'kabelfahne',
+                        opacity: 1,
+                        url: layer.url + '&LAYERS=' + layer.layers[0] + '&SRS=' + layer.projection.projCode + '&TRANSPARENT=TRUE&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&FORMAT=image%2Fpng'
+                    };
+                    $.merge(fields, $('<input />', {
+                        type: 'hidden',
+                        name: 'layers[666'+key+']',
+                        value: JSON.stringify(lyrConf),
+                        weight: self.map.map.olMap.getLayerIndex(layer)
+                    }));
+                });
             }
 
             // overview map
