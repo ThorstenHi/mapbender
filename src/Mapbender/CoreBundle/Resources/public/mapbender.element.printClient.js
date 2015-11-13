@@ -21,7 +21,7 @@
         popupIsOpen: true,
         rotateValue: 0,
         freePrint: false,
-		drawControl: null,
+	drawControl: null,
 
         _create: function() {
             if(!Mapbender.checkTarget("mbPrintClient", this.options.target)){
@@ -100,7 +100,7 @@
                         buttons: {
                                 'cancel': {
                                     label: Mapbender.trans('mb.core.printclient.popup.btn.cancel'),
-                                    cssClass: 'button buttonCancel right',
+                                    cssClass: 'button buttonCancel critical right',
                                     callback: function(){
                                         self.close();
                                     }
@@ -471,10 +471,6 @@
                     continue;
                 }
 
-                if(layer.name === "KabelfahnenControl") {
-                    continue;
-                }
-
                 var geometries = [];
                 for(var idx = 0; idx < layer.features.length; idx++) {
                     var feature = layer.features[idx];
@@ -511,24 +507,6 @@
                 }));
             }
 
-            // kabelfahne
-            var kfLayers = this.map.map.olMap.getLayersByName('Kabelfahne');
-            if (undefined !== kfLayers){
-                $.each(kfLayers, function(key, layer) {
-                    var lyrConf = {
-                        type: 'kabelfahne',
-                        opacity: 1,
-                        url: layer.url + '&LAYERS=' + layer.layers[0] + '&SRS=' + layer.projection.projCode + '&TRANSPARENT=TRUE&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&FORMAT=image%2Fpng'
-                    };
-                    $.merge(fields, $('<input />', {
-                        type: 'hidden',
-                        name: 'layers[666'+key+']',
-                        value: JSON.stringify(lyrConf),
-                        weight: self.map.map.olMap.getLayerIndex(layer)
-                    }));
-                });
-            }
-
             // overview map
             var ovMap = this.map.map.olMap.getControlsByClass('OpenLayers.Control.OverviewMap')[0],
             count = 0;
@@ -554,11 +532,6 @@
                     count++;
                 }
             }
-            
-            for (key in this.options.hidden_fields) {
-                var value = eval(this.options.hidden_fields[key]);
-                $('input[name="extra[' + key + ']"]').val(value);
-            } 
 
             $('div#layers').empty();
             fields.appendTo(form.find('div#layers'));

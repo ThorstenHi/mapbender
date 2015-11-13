@@ -181,26 +181,6 @@ class PrintClient extends Element
 
                 foreach ($data['layers'] as $idx => $layer) {
                     $data['layers'][$idx] = json_decode($layer, true);
-
-                    if($data['layers'][$idx]['type'] == 'kabelfahne'){
-                        $data['layers'][$idx]['type'] = 'wms';
-                        $url = $data['layers'][$idx]['url'];
-                        $url = str_replace('/wms/', '/print/', $url);
-
-                        // sign url
-                        $signer = $this->container->get('signer');
-                        $url = $signer->signUrl($url);
-
-                        // create token
-                        $token = $this->container->get('security.context')->getToken();
-                        $username = $token->getUsername();
-                        $now = new \DateTime(); $now = $now->format(\DateTime::ISO8601);
-                        $token = array(
-                            'username' => $username,
-                            'created' => $now);
-                        $signature = $signer->dump($token);
-                        $data['layers'][$idx]['url'] = $url . '&TOKEN=' . $signature . '&BBOX=';
-                    }
                 }
 
                 if (isset($data['overview'])) {
