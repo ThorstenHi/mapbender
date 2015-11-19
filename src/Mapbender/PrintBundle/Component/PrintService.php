@@ -65,9 +65,9 @@ class PrintService
 
         if(isset($data['freePrint']) && $data['freePrint']){
             if($data['extent']['width'] >= $data['extent']['height']){
-                $this->imageHeight = ($this->imageWidth / $data['extent']['width']) * $data['extent']['height'];
+                $this->imageHeight = round(($this->imageWidth / $data['extent']['width']) * $data['extent']['height']);
             }else{
-                $this->imageWidth = ($this->imageHeight / $data['extent']['height']) * $data['extent']['width'];
+                $this->imageWidth = round(($this->imageHeight / $data['extent']['height']) * $data['extent']['width']);
             }
         }
 
