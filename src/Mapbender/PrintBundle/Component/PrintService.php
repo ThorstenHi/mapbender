@@ -928,11 +928,19 @@ class PrintService
             imagefilledellipse($image, $p[0], $p[1], 2*$radius, 2*$radius, $color);
         }
         // Circle border
+        imagesetthickness($image, $geometry['style']['strokeWidth']);
         $color = $this->getColor(
             $geometry['style']['strokeColor'],
             $geometry['style']['strokeOpacity'],
             $image);
-        imageellipse($image, $p[0], $p[1], 2*$radius, 2*$radius, $color);
+        if ($this->data['quality'] > 72){
+            $r = 8*$radius;
+            for($i = 0; $i < 20; $i++){
+                imageellipse($image, $p[0], $p[1], $r+$i, $r+$i, $color);
+            }
+        }else{
+            imageellipse($image, $p[0], $p[1], 2*$radius, 2*$radius, $color);
+        }
     }
 
     private function drawFeatures()
