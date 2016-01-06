@@ -1038,20 +1038,29 @@ class PrintService
     private function realWorld2mapPos($rw_x,$rw_y)
     {
         $quality = $this->data['quality'];
-        $mapWidth = $this->data['extent']['width'];
-        $mapHeight = $this->data['extent']['height'];
+        $width = $this->data['extent']['width'];
+        $height = $this->data['extent']['height'];
         $centerx = $this->data['center']['x'];
         $centery = $this->data['center']['y'];
-        $minX = $centerx - $mapWidth * 0.5;
-        $minY = $centery - $mapHeight * 0.5;
-        $maxX = $centerx + $mapWidth * 0.5;
-        $maxY = $centery + $mapHeight * 0.5;
+        $minX = $centerx - $width * 0.5;
+        $minY = $centery - $height * 0.5;
+        $maxX = $centerx + $width * 0.5;
+        $maxY = $centery + $height * 0.5;
         $extentx = $maxX - $minX ;
-	$extenty = $maxY - $minY ;
-        $pixPos_x = (($rw_x - $minX)/$extentx) * round($this->conf['map']['width']  / 25.4 * $quality) ;
-	$pixPos_y = (($maxY - $rw_y)/$extenty) * round($this->conf['map']['height']  / 25.4 * $quality);
+        $extenty = $maxY - $minY ;
 
-	return array($pixPos_x, $pixPos_y);
+        if(!isset($this->data['freePrint']) ){
+            $mapWidth = $this->conf['map']['width'];
+            $mapHeight = $this->conf['map']['height'];
+        }else{
+            $mapWidth = round(($this->imageWidth / $this->data['quality']) * 25.4);
+            $mapHeight = round(($this->imageHeight / $this->data['quality']) * 25.4);
+        }
+
+        $pixPos_x = (($rw_x - $minX)/$extentx) * round($mapWidth  / 25.4 * $quality) ;
+        $pixPos_y = (($maxY - $rw_y)/$extenty) * round($mapHeight  / 25.4 * $quality);
+
+        return array($pixPos_x, $pixPos_y);
     }
 
     private function realWorld2ovMapPos($ovWidth, $ovHeight, $rw_x,$rw_y)
