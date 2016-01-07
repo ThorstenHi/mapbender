@@ -49,8 +49,8 @@
         </div>
             
         {% if configuration.optional_fields is defined %}
-            {% set required = '' %}
             {% for key,field in configuration.optional_fields %}
+                {% set required = '' %}
                 <label class="labelInput">{{ field.label }}
                     {% if field.required is defined and field.required == true %}
                         <span class="required">*</span>
