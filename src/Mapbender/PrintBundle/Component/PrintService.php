@@ -399,37 +399,39 @@ class PrintService
         }
 
         // fill text fields
-        foreach ($this->conf['fields'] as $k => $v) {
-            $pdf->SetFont('Arial', '', $this->conf['fields'][$k]['fontsize']);
-            $pdf->SetXY($this->conf['fields'][$k]['x'],
-                $this->conf['fields'][$k]['y']);
+        if(isset($this->conf['overview'])){
+            foreach ($this->conf['fields'] as $k => $v) {
+                $pdf->SetFont('Arial', '', $this->conf['fields'][$k]['fontsize']);
+                $pdf->SetXY($this->conf['fields'][$k]['x'],
+                    $this->conf['fields'][$k]['y']);
 
-            // continue if extent field is set
-            if(preg_match("/^extent/", $k)){
-                continue;
-            }
+                // continue if extent field is set
+                if(preg_match("/^extent/", $k)){
+                    continue;
+                }
 
-            switch ($k) {
-                case 'date' :
-                    $date = new \DateTime;
-                    $pdf->Cell($this->conf['fields']['date']['width'],
-                        $this->conf['fields']['date']['height'],
-                        $date->format('d.m.Y'));
-                    break;
-                case 'scale' :
-                    if(!$this->data['freePrint']){
-                        $pdf->Cell($this->conf['fields']['scale']['width'],
-                            $this->conf['fields']['scale']['height'],
-                            '1 : ' . $this->data['scale_select']);
-                    }
-                    break;
-                default:
-                    if (isset($this->data['extra'][$k])) {
-                        $pdf->MultiCell($this->conf['fields'][$k]['width'],
-                            $this->conf['fields'][$k]['height'],
-                            $this->data['extra'][$k]);
-                    }
-                    break;
+                switch ($k) {
+                    case 'date' :
+                        $date = new \DateTime;
+                        $pdf->Cell($this->conf['fields']['date']['width'],
+                            $this->conf['fields']['date']['height'],
+                            $date->format('d.m.Y'));
+                        break;
+                    case 'scale' :
+                        if(!$this->data['freePrint']){
+                            $pdf->Cell($this->conf['fields']['scale']['width'],
+                                $this->conf['fields']['scale']['height'],
+                                '1 : ' . $this->data['scale_select']);
+                        }
+                        break;
+                    default:
+                        if (isset($this->data['extra'][$k])) {
+                            $pdf->MultiCell($this->conf['fields'][$k]['width'],
+                                $this->conf['fields'][$k]['height'],
+                                $this->data['extra'][$k]);
+                        }
+                        break;
+                }
             }
         }
 
