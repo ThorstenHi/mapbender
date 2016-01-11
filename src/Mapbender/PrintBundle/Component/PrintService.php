@@ -65,9 +65,23 @@ class PrintService
 
         if(isset($data['freePrint']) && $data['freePrint']){
             if($data['extent']['width'] >= $data['extent']['height']){
-                $this->imageHeight = round(($this->imageWidth / $data['extent']['width']) * $data['extent']['height']);
+                $tempHeight = round(($this->imageWidth / $data['extent']['width']) * $data['extent']['height']);
+                //$this->imageHeight = round(($this->imageWidth / $data['extent']['width']) * $data['extent']['height']);
+                if($tempHeight < $this->imageHeight){
+                    $this->imageHeight = $tempHeight;
+                }else{
+                    $this->imageWidth = round(($this->imageHeight / $data['extent']['height']) * $data['extent']['width']);
+                    $this->imageHeight = round(($this->imageWidth / $data['extent']['width']) * $data['extent']['height']);
+                }
             }else{
-                $this->imageWidth = round(($this->imageHeight / $data['extent']['height']) * $data['extent']['width']);
+                $tempWidth = round(($this->imageHeight / $data['extent']['height']) * $data['extent']['width']);
+                //$this->imageWidth = round(($this->imageHeight / $data['extent']['height']) * $data['extent']['width']);
+                if($tempWidth < $this->imageWidth){
+                    $this->imageWidth = $tempWidth;
+                }else{
+                    $this->imageHeight = round(($this->imageWidth / $data['extent']['width']) * $data['extent']['height']);
+                    $this->imageWidth = round(($this->imageHeight / $data['extent']['height']) * $data['extent']['width']);
+                }
             }
         }
 
