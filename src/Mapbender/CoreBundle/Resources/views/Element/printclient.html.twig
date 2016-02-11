@@ -1,10 +1,16 @@
 <div id="{{ id }}" class="mb-element mb-element-printclient" title="{{ title |trans }}">
+    
+    {%  if configuration['type'] is defined and configuration.type == 'element' %}
+        <input type="button" class="button" id="printToggle" active="false" value="{{ 'mb.core.printclient.btn.activate' | trans }}"/>
+        <br>    
+    {% endif %}
+
     <div class="checkWrapper left iconCheckbox iconCheckboxActive " data-icon="iconCheckbox">
-		<input class="checkbox" type="checkbox" name="freePrint" value="1">
-	</div>
-	<label class="labelCheck">freier Druck</label><br>
-	
-	<form id="formats" action="">
+	<input class="checkbox" type="checkbox" name="freePrint" value="1">
+    </div>
+    <label class="labelCheck">freier Druck</label><br>	
+    
+    <form id="formats" action="">
         
         <label class="labelInput">{{ 'mb.core.printclient.label.template' | trans }}</label>
         <div class="dropdown">
@@ -52,11 +58,7 @@
             {% for key,field in configuration.optional_fields %}
                 {% set required = '' %}
                 <label class="labelInput">{{ field.label }}
-                    {% if field.required is defined and field.required == true %}
-                        <span class="required">*</span>
-                        {% set required = 'required=required' %}
-                    {% endif %}
-                    {% if field.options is defined and field.options.required == true %}
+                    {% if field.options.required == true %}
                         <span class="required">*</span>
                         {% set required = 'required=required' %}
                     {% endif %}
@@ -78,6 +80,7 @@
         
         <div id="layers"></div>
         <input type="submit" style="display: none"/>
+        <input type="button" class="button printSubmit hidden" value="{{ 'mb.core.printclient.popup.btn.ok' | trans }}"/>
     
     </form>
 </div>

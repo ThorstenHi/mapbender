@@ -21,23 +21,15 @@ class PrintService
 
     public function doPrint($data)
     {
-        $t0 = time();
         $this->setup($data);
-        $this->container->get('logger')->debug('Setup: ' . (time() - $t0) . ' seconds.');
 
-        $t0 = time();
         if ($data['rotation'] == 0) {
             $this->createFinalMapImage();
         } else {
             $this->createFinalRotatedMapImage();
         }
-        $this->container->get('logger')->debug('Building image: ' . (time() - $t0) . ' seconds.');
 
-        $t0 = time();
-        $pdf = $this->buildPdf();
-        $this->container->get('logger')->debug('Building PDF: ' . (time() - $t0) . ' seconds.');
-
-        return $pdf;
+        return $this->buildPdf();
     }
 
     private function setup($data)
@@ -189,7 +181,6 @@ class PrintService
 
     private function createFinalMapImage()
     {
-        $t0 = time();
         $width = $this->imageWidth;
         $height = $this->imageHeight;
         $imageNames = $this->getImages($width, $height);
@@ -199,9 +190,6 @@ class PrintService
         $finalImage = imagecreatetruecolor($width, $height);
         $bg = ImageColorAllocate($finalImage, 255, 255, 255);
         imagefilledrectangle($finalImage, 0, 0, $width, $height, $bg);
-
-        $this->container->get('logger')->debug('Setting up and fetching images: ' . (time() - $t0) . ' seconds.');
-        $t0 = time();
 
         foreach ($imageNames as $imageName) {
             // Note: suppressing the errors IS bad, bad PHP wants us to do it that way
@@ -216,8 +204,6 @@ class PrintService
         }
         //draw features
         $this->drawFeatures();
-
-        $this->container->get('logger')->debug('Painting images on top of each other: ' . (time() - $t0) . ' seconds.');
     }
 
     private function createFinalRotatedMapImage()
@@ -985,11 +971,13 @@ class PrintService
     private function addLegend()
     {
         $this->pdf->addPage('P');
-        $this->pdf->SetFont('Arial', 'B', 14);
+        $this->pdf->SetFont('Arial', 'B', 11);
         $x = 5;
         $y = 10;
 
         foreach ($this->data['legends'] as $idx => $legendArray) {
+            $c = 1;
+            $arraySize = count($legendArray);
             foreach ($legendArray as $title => $legendUrl) {
 
                 if (preg_match('/request=GetLegendGraphic/i', $legendUrl) === 0) {
@@ -1001,13 +989,13 @@ class PrintService
                     continue;
                 }
                 $size = getimagesize($image);
-                $tempY = round($size[1] * 25.4 / 72) + 10;
+                $tempY = round($size[1] * 25.4 / 96) + 10;
 
-                if($idx > 0){
+                if($c> 1){
                     if($y + $tempY > ($this->pdf->h)){
                         $x += 105;
                         $y = 10;
-                        if($x > ($this->pdf->w)-30){
+                        if($x > ($this->pdf->w)){
                             $this->pdf->addPage('P');
                             $x = 5;
                             $y = 10;
@@ -1017,19 +1005,21 @@ class PrintService
 
                 $this->pdf->setXY($x,$y);
                 $this->pdf->Cell(0,0,  utf8_decode($title));
-                $this->pdf->Image($image, $x, $y + 5, 0, 0, 'png', '', false, 0);
+                //$this->pdf->Image($image, $x, $y + 5, 0, 0, 'png', '', false, 0);
+                $this->pdf->Image($image, $x, $y + 5, ($size[0] * 25.4 / 96), ($size[1] * 25.4 / 96), 'png', '', false, 0);
 
-                $y += round($size[1] * 25.4 / 72) + 10;
-                if($y > ($this->pdf->h)-30){
+                $y += round($size[1] * 25.4 / 96) + 10;
+                if($y > ($this->pdf->h)){
                     $x += 105;
                     $y = 10;
                 }
-                if($x > ($this->pdf->w)-30){
+                if($x > ($this->pdf->w) && $c < $arraySize){
                     $this->pdf->addPage('P');
                     $x = 5;
                     $y = 10;
                 }
                 unlink($image);
+                $c++;
             }
         }
     }
