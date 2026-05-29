@@ -385,6 +385,7 @@ mb:
         srs: SRS
       error:
         extent_wrong: 'min %dim must be smaller than max %dim'
+        extent_invalid: 'Invalid extent: expected 4 numbers (min x, min y, max x, max y)'
     scalebar:
       class:
         title: 'Scale bar'

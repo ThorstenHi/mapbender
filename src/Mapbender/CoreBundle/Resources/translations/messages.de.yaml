@@ -385,6 +385,7 @@ mb:
         srs: SRS
       error:
         extent_wrong: 'min %dim muss kleiner sein als max %dim.'
+        extent_invalid: 'Ungültige Ausdehnung: Es werden 4 Zahlen erwartet (min x, min y, max x, max y).'
     scalebar:
       class:
         title: Maß­stabs­leiste

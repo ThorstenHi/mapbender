@@ -250,14 +250,27 @@ class Map extends AbstractElementService
     {
         // check that max > min for all cases
         foreach (['extent_start', 'extent_max'] as $key) {
-            $extent = $configuration[$key];
+            $extent = $configuration[$key] ?? null;
+
+            if (!is_array($extent) || count($extent) !== 4
+                || !is_numeric($extent[0] ?? null) || !is_numeric($extent[1] ?? null)
+                || !is_numeric($extent[2] ?? null) || !is_numeric($extent[3] ?? null)
+            ) {
+                $msg = $translator->trans('mb.core.map.error.extent_invalid');
+                if ($form !== null) {
+                    $form->get('configuration')->get($key)->addError(new FormError($msg));
+                    continue;
+                } else {
+                    throw new ValidationFailedException($msg);
+                }
+            }
+
             foreach ([0, 1] as $index) {
                 if ($extent[$index] >= $extent[$index + 2]) {
                     $msg = $translator->trans('mb.core.map.error.extent_wrong');
                     $msg = str_replace("%dim", $index === 0 ? 'x' : 'y', $msg);
                     if ($form !== null) {
-                        $form->get('configuration')->get($key)->get($index)->addError(new FormError($msg));
-                        $form->get('configuration')->get($key)->get($index + 2)->addError(new FormError(""));
+                        $form->get('configuration')->get($key)->addError(new FormError($msg));
                     } else {
                         throw new ValidationFailedException($msg);
                     }
